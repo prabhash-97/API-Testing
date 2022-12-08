@@ -1,10 +1,17 @@
+using log4net;
+using log4net.Config;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
+using NUnit.Framework.Interfaces;
+using OpenQA.Selenium;
+using ReportPortal.Shared;
 using RestSharp;
 using System;
+using System.IO;
 using System.Net;
 
+//[assembly: log4net.Config.XmlConfigurator(Watch = true)]
 namespace TestProject1
 {
     [TestFixture]
@@ -13,43 +20,81 @@ namespace TestProject1
     {
         RestResponse response;
 
+        IWebDriver driver;
+        
+        private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         [SetUp]
         public void Setup()
         {
             BaseClass baseClass = new BaseClass();
             response = baseClass.BaseClassConfigure();
-            Console.WriteLine("Pre Condition for test");
+
+            //XmlConfigurator.Configure();
+            BasicConfigurator.Configure();
+
+            Log.Info("Pre Condition for test");
         }
 
         [Test]
         public void VerifyHttpStatusCode()
         {
-            Console.WriteLine("Http Status Code : " + response.StatusCode);
-            NUnit.Framework.Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            try
+            {
+                Log.Debug("Http Status Code : " + response.StatusCode);
+                NUnit.Framework.Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            }
+            catch
+            {
+                Log.Error("An error happened");
+            }
+         
         }
 
 
         [Test]
         public void VerifyResponseHeader()
         {
-            Console.WriteLine("Response Header : " + response.ContentType);
-            NUnit.Framework.Assert.That(response.ContentType, Is.EqualTo("application/json"));
+            try
+            {
+                Log.Debug("Response Header : " + response.ContentType);
+                NUnit.Framework.Assert.That(response.ContentType, Is.EqualTo("application/json"));
+            }
+            catch
+            {
+                Log.Error("An error happened");
+            }
+            
         }
 
 
         [Test]
         public void VerifyHttpResponseBody()
         {
-            JArray jObj = (JArray)JsonConvert.DeserializeObject(response.Content.ToString());
-            int count = jObj.Count;
-            Console.WriteLine("Array Count : " + count);
-            NUnit.Framework.Assert.That(count, Is.EqualTo(10));
+            try
+            {
+                JArray jObj = (JArray)JsonConvert.DeserializeObject(response.Content.ToString());
+                int count = jObj.Count;
+                Log.Debug("Array Count : " + count);
+                NUnit.Framework.Assert.That(count, Is.EqualTo(10));
+            }
+            catch
+            {
+                Log.Error("An error happened");
+            }
+            
         }
 
+        
         [TearDown]
-        public static void TestClean()
+        public void TestClean()
         {
-            Console.WriteLine("Post Condition for test");
+            Log.Info("Post Condition for test");
+            if (TestContext.CurrentContext.Result.Outcome.Status == TestStatus.Failed)
+            {
+                Screenshot TakeScreenshot = ((ITakesScreenshot)driver).GetScreenshot();
+                TakeScreenshot.SaveAsFile("C:\\kash\\TestProject1\\ScreenShots");
+            }
         }
     }
 }
