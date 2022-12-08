@@ -1,0 +1,15 @@
+﻿{
+  "enabled": true,
+  "server": {
+    "url": "https://demo.reportportal.io/api/v1",
+    "project": "prabhash-97_personal",
+    "authentication": {
+      "uuid": "2b656e1e-987e-48a5-bf03-da7b4f64b31e"
+    }
+  },
+  "launch": {
+    "name": "API Testing",
+    "description": "Get request Test Users",
+    "debugMode": false
+  }
+}
