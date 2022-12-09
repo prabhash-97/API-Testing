@@ -42,11 +42,11 @@ namespace TestProject1
             try
             {
                 Log.Debug("Http Status Code : " + response.StatusCode);
-                NUnit.Framework.Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+                Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             }
             catch
             {
-                Log.Error("An error happened");
+                Log.Error("An error happened : Status Code is not OK");
             }
          
         }
@@ -58,11 +58,11 @@ namespace TestProject1
             try
             {
                 Log.Debug("Response Header : " + response.ContentType);
-                NUnit.Framework.Assert.That(response.ContentType, Is.EqualTo("application/json"));
+                Assert.That(response.ContentType, Is.EqualTo("application/json"));
             }
             catch
             {
-                Log.Error("An error happened");
+                Log.Error("An error happened : Response Header is not application/json");
             }
             
         }
@@ -76,11 +76,11 @@ namespace TestProject1
                 JArray jObj = (JArray)JsonConvert.DeserializeObject(response.Content.ToString());
                 int count = jObj.Count;
                 Log.Debug("Array Count : " + count);
-                NUnit.Framework.Assert.That(count, Is.EqualTo(10));
+                Assert.That(count, Is.EqualTo(10));
             }
             catch
             {
-                Log.Error("An error happened");
+                Log.Error("An error happened : Array Count not eqaul to 10");
             }
             
         }
