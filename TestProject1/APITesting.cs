@@ -10,19 +10,20 @@ using RestSharp;
 using System;
 using System.IO;
 using System.Net;
+using TestProject;
+using Microsoft.Extensions.Logging;
+using OpenQA.Selenium.Chrome;
 
 //[assembly: log4net.Config.XmlConfigurator(Watch = true)]
 namespace TestProject1
 {
     [TestFixture]
     [Parallelizable(ParallelScope.All)]
-    public class APITests
+    public class APITests :BaseTest
     {
         RestResponse response;
 
-        IWebDriver driver;
-        
-        private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog Logg = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         [SetUp]
         public void Setup()
@@ -30,10 +31,9 @@ namespace TestProject1
             BaseClass baseClass = new BaseClass();
             response = baseClass.BaseClassConfigure();
 
-            //XmlConfigurator.Configure();
             BasicConfigurator.Configure();
 
-            Log.Info("Pre Condition for test");
+            Logg.Info("Pre Condition for test");
         }
 
         [Test]
@@ -41,28 +41,27 @@ namespace TestProject1
         {
             try
             {
-                Log.Debug("Http Status Code : " + response.StatusCode);
+                Logg.Debug("Http Status Code : " + response.StatusCode);
                 Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             }
-            catch
+            catch(Exception ex)
             {
-                Log.Error("An error happened : Status Code is not OK");
+                Logg.Error("An error happened : Status Code is not OK" + ex);
             }
          
         }
-
 
         [Test]
         public void VerifyResponseHeader()
         {
             try
             {
-                Log.Debug("Response Header : " + response.ContentType);
+                Logg.Debug("Response Header : " + response.ContentType);
                 Assert.That(response.ContentType, Is.EqualTo("application/json"));
             }
             catch
             {
-                Log.Error("An error happened : Response Header is not application/json");
+                Logg.Error("An error happened : Response Header is not application/json");
             }
             
         }
@@ -75,26 +74,41 @@ namespace TestProject1
             {
                 JArray jObj = (JArray)JsonConvert.DeserializeObject(response.Content.ToString());
                 int count = jObj.Count;
-                Log.Debug("Array Count : " + count);
+                Logg.Debug("Array Count : " + count);
                 Assert.That(count, Is.EqualTo(10));
             }
             catch
             {
-                Log.Error("An error happened : Array Count not eqaul to 10");
+                Logg.Error("An error happened : Array Count not eqaul to 10");
             }
             
         }
 
-        
+        [Test]
+        public async Task VerifyHttpStatusCodeWriteToFile()
+        {
+            try
+            {
+                var expectedResult = HttpStatusCode.OK;
+
+                logger.Log(Microsoft.Extensions.Logging.LogLevel.Debug, "Http Status code test: Actual output: " + response.StatusCode);
+                WriteToFile(Microsoft.Extensions.Logging.LogLevel.Debug.ToString(), "Http Status code test: Actual output: " + response.StatusCode);
+
+                Assert.AreEqual(expectedResult, response.StatusCode);
+
+            }
+            catch
+            {
+                logger.Log(Microsoft.Extensions.Logging.LogLevel.Error, "Error occured while running Http Status code  Test");
+                WriteToFile(Microsoft.Extensions.Logging.LogLevel.Error.ToString(), "Error occured while running User data count Test");
+            }
+        }
+
+
         [TearDown]
         public void TestClean()
         {
-            Log.Info("Post Condition for test");
-            if (TestContext.CurrentContext.Result.Outcome.Status == TestStatus.Failed)
-            {
-                Screenshot TakeScreenshot = ((ITakesScreenshot)driver).GetScreenshot();
-                TakeScreenshot.SaveAsFile("C:\\kash\\TestProject1\\ScreenShots");
-            }
+            Logg.Info("Post Condition for test");
         }
     }
 }
