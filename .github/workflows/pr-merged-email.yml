@@ -1,59 +1,33 @@
-name: PR → ML inference → notify
+name: PR Merged Email
 
 on:
   pull_request:
     types: [closed]
 
-permissions:
-  pull-requests: write
-  contents: read
-
 jobs:
-  run-ml-and-notify:
+  notify-ml:
     runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+      - name: Checkout Repo
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.10
 
-    - name: Install dependencies
-      run: |
-        pip install --upgrade pip
-        pip install -r requirements.txt
+      - name: Install dependencies
+        run: pip install requests
 
-    - name: Extract PR Metadata
-      run: |
-        echo "PR_NUMBER=${{ github.event.pull_request.number }}" >> $GITHUB_ENV
-        echo "PR_TITLE=${{ github.event.pull_request.title }}" >> $GITHUB_ENV
-        echo "PR_BODY=${{ github.event.pull_request.body }}" >> $GITHUB_ENV
-        echo "PR_AUTHOR=${{ github.event.pull_request.user.login }}" >> $GITHUB_ENV
-        echo "PR_URL=${{ github.event.pull_request.html_url }}" >> $GITHUB_ENV
-
-    - name: Get changed files
-      run: |
-        files=$(gh pr view ${{ github.event.pull_request.number }} --json files --jq '.files[].path' | jq -R -s -c 'split("")[:-1]') echo "CHANGED_FILES=$files" >> $GITHUB_ENV
-
-    - name: Run ML + Notify
-      env:
-        ML_API_URL: ${{ secrets.ML_API_URL }}
-        SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
-        SMTP_PORT: ${{ secrets.SMTP_PORT }}
-        SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
-        SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-        FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
-        FALLBACK_EMAIL: ${{ secrets.FALLBACK_EMAIL }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        PR_NUMBER: ${{ env.PR_NUMBER }}
-        PR_TITLE: ${{ env.PR_TITLE }}
-        PR_BODY: ${{ env.PR_BODY }}
-        PR_AUTHOR: ${{ env.PR_AUTHOR }}
-        PR_URL: ${{ env.PR_URL }}
-        CHANGED_FILES: ${{ env.CHANGED_FILES }}
-        GITHUB_REPOSITORY: ${{ github.repository }}
-      run: |
-        python scripts/pr_to_ml_and_notify.py
+      - name: Run ML API and Send Email
+        run: python .github/scripts/run_ml_and_email.py
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          ML_API_URL: ${{ secrets.ML_API_URL }}  # Your ML API endpoint
