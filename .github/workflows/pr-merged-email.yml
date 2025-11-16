@@ -95,7 +95,7 @@ jobs:
               msg["Subject"] = subject
               msg["From"] = email_user
               msg["To"] = to_email
-              msg.set_content(f"""Hi {pr_author_login}, Your PR has been successfully merged. === ML Analysis === {ml_text} Thanks!""")
+              msg.set_content(f"""Hi {pr_author_login}, Your PR has been successfully merged. === ML Analysis ==={ml_text}Thanks!""")
               try:
                   with smtplib.SMTP("smtp.gmail.com", 587) as s:
                       s.starttls()
