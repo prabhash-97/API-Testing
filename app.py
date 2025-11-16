@@ -1,20 +1,20 @@
-import torch
 from fastapi import FastAPI
 from pydantic import BaseModel
+from model import ModelWrapper  # Still works in same folder
 
-model = torch.load("best_pr_testcase_model.pt", map_location="cpu")
-model.eval()
+app = FastAPI(title="PyTorch ML Model API")
 
-app = FastAPI()
+# Load model once
+model = ModelWrapper(model_path="best_pr_testcase_model.pt")
 
-class Input(BaseModel):
-    title: str
-    body: str
+class InputData(BaseModel):
+    data: list
+
+@app.get("/")
+def root():
+    return {"message": "ML Model API is running"}
 
 @app.post("/predict")
-def predict(input: Input):
-    # dummy example — replace with real preprocess
-    x = torch.tensor([len(input.title), len(input.body)], dtype=torch.float32)
-    with torch.no_grad():
-        out = model(x).tolist()
-    return {"prediction": out}
+def predict(input_data: InputData):
+    predictions = model.predict(input_data.data)
+    return {"predictions": predictions}
