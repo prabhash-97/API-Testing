@@ -48,7 +48,7 @@ def text_to_indices(text, max_len=MAX_LEN, vocab_size=VOCAB_SIZE):
 # Load model
 # =========================
 model = SmallPRClassifier().to(DEVICE)
-model.load_state_dict(torch.load("dummy_small_model.pt", map_location=DEVICE))
+model.load_state_dict(torch.load("best_pr_testcase_model.pt", map_location=DEVICE))
 model.eval()
 
 # =========================
