@@ -1,20 +1,19 @@
+# app.py
 from fastapi import FastAPI
 from pydantic import BaseModel
-from model import ModelWrapper  # Still works in same folder
+from model import predict_testcases
 
-app = FastAPI(title="PyTorch ML Model API")
+app = FastAPI(title="PR Test Case Prioritization API")
 
-# Load model once
-model = ModelWrapper(model_path="best_pr_testcase_model.pt")
-
-class InputData(BaseModel):
-    data: list
+class PRInput(BaseModel):
+    pr_title: str
+    top_k: int = 5
 
 @app.get("/")
 def root():
-    return {"message": "ML Model API is running"}
+    return {"message": "ML API is running"}
 
 @app.post("/predict")
-def predict(input_data: InputData):
-    predictions = model.predict(input_data.data)
-    return {"predictions": predictions}
+def predict(pr: PRInput):
+    results = predict_testcases(pr.pr_title, pr.top_k)
+    return {"predictions": results}
