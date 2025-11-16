@@ -74,10 +74,9 @@ jobs:
           # Call ML API (GET or POST)
           # -------------------------------
           try:
-              response = requests.get(
-                  ml_api_url,
-                  params={"pr_title": pr_title, "top_k": 5}
-              )
+              import json
+              payload = {"pr_title": pr_title, "top_k": 5}
+              response = requests.post(ml_api_url, json=payload, timeout=20)
               response.raise_for_status()
               predictions = response.json().get("predictions", [])
               ml_text = str(predictions)
