@@ -114,4 +114,10 @@ jobs:
           }
 
           try:
-              r = requests.post(co
+              r = requests.post(comment_url, headers=headers, json=comment_payload)
+              r.raise_for_status()
+              print("PR comment posted successfully.")
+          except Exception as e:
+              print(f"Failed to post PR comment: {e}")
+
+          EOF
