@@ -1,4 +1,4 @@
 {
-  "pr_title": "Fix null pointer bug1",
+  "pr_title": "Fix null pointer bug2",
   "changed_files": ["src/login.py", "src/utils.py"]
 }
